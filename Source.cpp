@@ -1,4 +1,4 @@
-﻿// Copyright 2020, Slava Ilyuk, All rights reserved.
+// Copyright 2020, Slava Ilyuk, All rights reserved.
 
 /*Text files or .txt files are a bit hard to parse in programs
 and easy to read, whereas .dat is usually used to store data
@@ -62,7 +62,7 @@ bool is_empty_file(FILE* stream);
 void letter_input(char string[], int size);
 void students_output(Student* student, FILE* stream);
 void int_in_file(const char* filename, FILE* stream, int value);
-int add_array_structure(Student structure, Student array[], int* index);
+int add_array_structure(Student structure, Student array[], int& index);
 int get_current_year(void);
 void print_date(void);
 int set_filename_win(const char* file_format, char filename[MAX_PATH]);
@@ -144,7 +144,7 @@ int main(void)
 	if ((OutputFile = fopen(output_file, "w")) == NULL) {
 		cout << "An ERROR occured with '" << output_file << "'." << endl;
 		return -1;
-	} 
+	}
 
 	// Check if the files exist. If they don't, so create them.
 	if (_access(data_file, 0) == -1) {	// access in io.h check the file for existance. code for that is 0
@@ -414,11 +414,11 @@ int main(void)
 		}
 		case 5:	// deletion 
 		{
-			
+
 			system("CLS");
 			print_date();
 
-			if (index == 0) { 
+			if (index == 0) {
 				cout << "\nThere is no students in database.\n";
 				cout << "\nPress enter to continue...";
 				cin.get();
@@ -667,7 +667,7 @@ int main(void)
 
 			Student* students_array = new Student[index];
 			int field_to_sort, int_temp;
-			char temp; 
+			char temp;
 
 			if ((DataFile = fopen(data_file, "rb")) == NULL) {
 				cout << "An ERROR occured with '" << data_file << "'." << endl;
@@ -789,8 +789,8 @@ int main(void)
 				return -1;
 			}
 
-			for (int i = 0; i < index; i++) { 
-				fwrite(&students_array[i], struct_size, 1, DataFile); 
+			for (int i = 0; i < index; i++) {
+				fwrite(&students_array[i], struct_size, 1, DataFile);
 				students_output(&students_array[i], OutputFile);
 			}
 			cout << "\nPress enter to continue...";
@@ -820,7 +820,7 @@ int main(void)
 				cout << "\n\nYou can enter between 1 till " << STRUCT_FIELDS_AMOUNT - 1 << "." << endl
 					<< "Try again: ";
 			} if (field_to_view == 0) { break; }
-			
+
 			system("CLS");
 			print_date();
 			// entering value 
@@ -930,7 +930,7 @@ int main(void)
 				fprintf(OutputFile, "\nTotal amount of students with that science mark: %d\n", specific_students_amount);
 				break;
 			}
-		
+
 			cout << "\nPress enter to continue...";
 			delete[] students_array;
 			cin.get();
@@ -993,23 +993,23 @@ void students_output(Student* student, FILE* stream)
 		printf("\n| %36.36s | %6d | %10d | %12d |        %2d |           %2d |      %2d |           %2d |         %.1f |", student->full_name, student->ID, student->birth_year, student->group_number, student->math_mark, student->physics_mark, student->it_mark, student->science_mark, student->average_mark);
 		printf("\n+--------------------------------------+--------+------------+--------------+-----------+--------------+---------+--------------+--------------+");
 		fprintf(stream, "\n| %36.36s | %6d | %10d | %12d |        %2d |           %2d |      %2d |           %2d |         %.1f |", student->full_name, student->ID, student->birth_year, student->group_number, student->math_mark, student->physics_mark, student->it_mark, student->science_mark, student->average_mark);
-	} else {
-	printf("\n| %36.36s | %6d | %10d | %12d |        %2d |           %2d |      %2d |           %2d |          %.1f |", student->full_name, student->ID, student->birth_year, student->group_number, student->math_mark, student->physics_mark, student->it_mark, student->science_mark, student->average_mark);
-	printf("\n+--------------------------------------+--------+------------+--------------+-----------+--------------+---------+--------------+--------------+");
-	fprintf(stream, "\n| %36.36s | %6d | %10d | %12d |        %2d |           %2d |      %2d |           %2d |          %.1f |", student->full_name, student->ID, student->birth_year, student->group_number, student->math_mark, student->physics_mark, student->it_mark, student->science_mark, student->average_mark);
+	}
+	else {
+		printf("\n| %36.36s | %6d | %10d | %12d |        %2d |           %2d |      %2d |           %2d |          %.1f |", student->full_name, student->ID, student->birth_year, student->group_number, student->math_mark, student->physics_mark, student->it_mark, student->science_mark, student->average_mark);
+		printf("\n+--------------------------------------+--------+------------+--------------+-----------+--------------+---------+--------------+--------------+");
+		fprintf(stream, "\n| %36.36s | %6d | %10d | %12d |        %2d |           %2d |      %2d |           %2d |          %.1f |", student->full_name, student->ID, student->birth_year, student->group_number, student->math_mark, student->physics_mark, student->it_mark, student->science_mark, student->average_mark);
 	}
 }
 
 
-int add_array_structure(Student student, Student array[], int* index)
+int add_array_structure(Student student, Student array[], int& index)
 {
-	if (*index >= SIZEE) {
+	if (index >= SIZEE) {
 		cout << "\nArray is full. Free some space to continue." << endl;
 		return -1;
 	}
 	else {
-		array[*index] = student;
-		*index++;
+		array[index++] = student;
 		return 0;
 	}
 }
@@ -1235,6 +1235,38 @@ bool string_compare(const char* str1, const char* str2)
 }
 
 
- 
+void hide_cursor()
+{
+	HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+	CONSOLE_CURSOR_INFO info;
+	info.dwSize = 100;
+	info.bVisible = FALSE;
+	SetConsoleCursorInfo(consoleHandle, &info);
+}
 
 
+void move_console_cursor(short x, short y)
+{
+	COORD position = { x, y };
+	HANDLE output_window = GetStdHandle(STD_OUTPUT_HANDLE);
+	SetConsoleCursorPosition(output_window, position);
+}
+
+
+void print_loading_field(int delay, int end_offset)
+{
+	int offset = 1;
+	std::cout << "[---------------------]";
+	move_console_cursor(0, 1);
+	for (int i = 0; i < 101; i++) {
+		if (i % 5 == 0) {
+			move_console_cursor(offset, 2);
+			Sleep(delay);
+			std::cout << "#";
+			offset++;
+		}
+		Sleep(delay);
+		move_console_cursor(end_offset, 2);
+		std::cout << i << '%';
+	}
+}
